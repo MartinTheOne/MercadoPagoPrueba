@@ -109,8 +109,10 @@ public class ProductoController {
             boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
 
             if (paymentConfirmed) {
+                System.out.print("pago recibido");
                 return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
             } else {
+                System.out.print("pago no encontrado");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pago no ecnontrado");
             }
         }

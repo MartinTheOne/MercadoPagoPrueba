@@ -38,17 +38,19 @@ public class MercadoPagoService {
         }
     }
 
-    public Map<String, Object> getMerchantOrderDetails(String merchantOrderId) {
-        String url = "https://api.mercadolibre.com/merchant_orders/" + merchantOrderId + "?access_token=" + accessToken;
+    public Map<String, Object> getMerchantOrderDetails(String resourceUrl) {
+        // Usar la URL completa directamente
+        String url = resourceUrl + "?access_token=" + accessToken;
 
         try {
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
-            return response.getBody();
+            return response.getBody(); // Devuelve el cuerpo de la respuesta
         } catch (RestClientException e) {
             System.out.println("Error obteniendo detalles del merchant order: " + e.getMessage());
             return null;
         }
     }
+
 
 }

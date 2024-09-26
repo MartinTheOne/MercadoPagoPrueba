@@ -65,6 +65,7 @@ public class ProductoController {
                     .items(items)
                     .backUrls(backUrlsRequest)
                     .additionalInfo("aqui iria el id del pedido para reconocer el mismo y poder confirmar la compra")
+                    .notificationUrl("https://mercadopagoprueba-production.up.railway.app/api/mp/webhook")
                     .build();
 
             PreferenceClient client = new PreferenceClient();
@@ -108,9 +109,9 @@ public class ProductoController {
             boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
 
             if (paymentConfirmed) {
-                return ResponseEntity.ok("Payment confirmed");
+                return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pago no ecnontrado");
             }
         }
 

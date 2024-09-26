@@ -12,6 +12,7 @@ import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,6 +64,7 @@ public class ProductoController {
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(items)
                     .backUrls(backUrlsRequest)
+                    .additionalInfo("aqui iria el id del pedido para reconocer el mismo y poder confirmar la compra")
                     .build();
 
             PreferenceClient client = new PreferenceClient();
@@ -93,4 +95,26 @@ public class ProductoController {
 
         return ResponseEntity.badRequest().body("Invalid request");
     }
+
+
+    @PostMapping("/api/mp/webhook")
+    public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
+        String type = (String) webhookData.get("type");
+        String action = (String) webhookData.get("action");
+        Map<String, String> data = (Map<String, String>) webhookData.get("data");
+        String paymentId = data.get("id");
+
+        if ("payment".equals(type) && "payment.updated".equals(action) && paymentId != null) {
+            boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
+
+            if (paymentConfirmed) {
+                return ResponseEntity.ok("Payment confirmed");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment not found");
+            }
+        }
+
+        return ResponseEntity.badRequest().body("Invalid webhook data");
+    }
 }
+

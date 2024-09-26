@@ -98,36 +98,26 @@ public class ProductoController {
     }
 
 
-  @PostMapping("/api/mp/webhook")
-public ResponseEntity<String> handleWebhookNotification(@RequestBody WebhookData webhookData) {
-    // Verificar si el webhookData o los datos dentro de él son null
-    if (webhookData == null || webhookData.getData() == null) {
-        return ResponseEntity.badRequest().body("Invalid webhook data: webhookData or webhookData.data is null");
-    }
+    @PostMapping("/api/mp/webhook")
+    public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
+        String type = (String) webhookData.get("type");
+        String action = (String) webhookData.get("action");
+        Map<String, String> data = (Map<String, String>) webhookData.get("data");
+        String paymentId = data.get("id");
 
-    String type = webhookData.getType();
-    String action = webhookData.getAction();
-    Map<String, String> data = webhookData.getData();
+        if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
+            boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
 
-    // Asegurarse de que los datos necesarios existen
-    if (!data.containsKey("id")) {
-        return ResponseEntity.badRequest().body("Invalid webhook data: missing payment id");
-    }
-
-    String paymentId = data.get("id");
-
-    if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
-        boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
-
-        if (paymentConfirmed) {
-            return ResponseEntity.ok("Payment confirmed");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment not found");
+            if (paymentConfirmed) {
+                System.out.print("pago recibido");
+                return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
+            } else {
+                System.out.print("pago no encontrado");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pago no ecnontrado");
+            }
         }
+
+        return ResponseEntity.badRequest().body("Invalid webhook data");
     }
-
-    return ResponseEntity.badRequest().body("Invalid request");
-}
-
 }
 

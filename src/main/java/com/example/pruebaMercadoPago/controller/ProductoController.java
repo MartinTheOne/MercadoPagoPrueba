@@ -2,6 +2,9 @@ package com.example.pruebaMercadoPago.controller;
 
 import com.example.pruebaMercadoPago.entity.Producto;
 import com.example.pruebaMercadoPago.service.MercadoPagoService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
@@ -64,7 +67,7 @@ public class ProductoController {
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(items)
                     .backUrls(backUrlsRequest)
-                    .additionalInfo("aqui iria el id del pedido para reconocer el mismo y poder confirmar la compra")
+                    .metadata(Map.of("pedidoId", "1221"))
                     .notificationUrl("https://mercadopagoprueba-production.up.railway.app/api/mp/webhook")
                     .build();
 
@@ -85,6 +88,8 @@ public class ProductoController {
         if ("payment".equals(topic) && id != null) {
             boolean paymentConfirmed = mercadoPagoService.verifyPayment(id);
 
+
+
             if (paymentConfirmed) {
                 System.out.print("se hizo la llamada desde mercado pago y el pago fue aceptado");
                 return ResponseEntity.ok("Payment confirmed");
@@ -99,7 +104,7 @@ public class ProductoController {
 
 
     @PostMapping("/api/mp/webhook")
-    public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
+    public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) throws JsonProcessingException {
         String type = (String) webhookData.get("type");
         String action = (String) webhookData.get("action");
         Map<String, String> data = (Map<String, String>) webhookData.get("data");
@@ -108,8 +113,14 @@ public class ProductoController {
         if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
             boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
 
+            String metadataString = (String) data.get("metadata");
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> metadata = objectMapper.readValue(metadataString, new TypeReference<Map<String, Object>>() {});
+
+            String pedidoId = (String) metadata.get("pedidoId");
+
             if (paymentConfirmed) {
-                System.out.print("pago recibido");
+                System.out.print("pago recibido PEDIDO ID"+ pedidoId);
                 return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
             } else {
                 System.out.print("pago no encontrado");

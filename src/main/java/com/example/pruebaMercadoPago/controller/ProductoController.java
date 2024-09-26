@@ -105,7 +105,7 @@ public class ProductoController {
         Map<String, String> data = (Map<String, String>) webhookData.get("data");
         String paymentId = data.get("id");
 
-        if ("payment".equals(type) && "payment.updated".equals(action) && paymentId != null) {
+        if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
             boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
 
             if (paymentConfirmed) {

@@ -79,42 +79,49 @@ public class ProductoController {
 
 
 
-    @PostMapping("/api/mp/webhook")
-    public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
-        System.out.println(webhookData.toString());
+   @PostMapping("/api/mp/webhook")
+public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
+    System.out.println(webhookData.toString());
 
-        String type = (String) webhookData.get("type");
-        String action = (String) webhookData.get("action");
+    String type = (String) webhookData.get("type");
+    String action = (String) webhookData.get("action");
 
-        // Verificar si el topic es un merchant order y procesarlo
-        if ("merchant_order".equals(webhookData.get("topic"))) {
-            // Asegúrate de que el campo "resource" sea una cadena antes de usar split
-            Object resourceObj = webhookData.get("resource");
-            if (resourceObj instanceof String) {
-                String resource = (String) resourceObj;
-                String merchantOrderId = resource.split("/")[5]; // Suponiendo que el formato es el correcto
+    // Verificar si el topic es un merchant order y procesarlo
+    if ("merchant_order".equals(webhookData.get("topic"))) {
+        Object resourceObj = webhookData.get("resource");
+        if (resourceObj instanceof String) {
+            String resource = (String) resourceObj;
+            String[] resourceParts = resource.split("/");
+
+            // Verificar si hay suficientes partes en la URL
+            if (resourceParts.length > 5) {
+                String merchantOrderId = resourceParts[5]; // Solo acceder si hay suficientes partes
                 Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(merchantOrderId);
                 System.out.println("Detalles del Merchant Order: " + merchantOrderDetails);
             } else {
-                System.out.println("El campo 'resource' no es una cadena");
+                System.out.println("La URL no tiene el formato esperado: " + resource);
             }
+        } else {
+            System.out.println("El campo 'resource' no es una cadena");
         }
-
-        // Verificar si el topic es payment y procesarlo
-        if ("payment".equals(type) && "payment.created".equals(action)) {
-            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
-            if (data != null) {
-                String paymentId = (String) data.get("id");
-                boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
-                if (paymentConfirmed) {
-                    System.out.println("pago recibido");
-                    return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
-                }
-            }
-        }
-
-        return ResponseEntity.badRequest().body("Invalid webhook data");
     }
+
+    // Verificar si el topic es payment y procesarlo
+    if ("payment".equals(type) && "payment.created".equals(action)) {
+        Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
+        if (data != null) {
+            String paymentId = (String) data.get("id");
+            boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
+            if (paymentConfirmed) {
+                System.out.println("pago recibido");
+                return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
+            }
+        }
+    }
+
+    return ResponseEntity.badRequest().body("Invalid webhook data");
+}
+
 
 
 

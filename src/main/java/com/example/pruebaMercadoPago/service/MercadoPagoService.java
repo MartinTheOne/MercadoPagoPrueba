@@ -23,15 +23,16 @@ public class MercadoPagoService {
     }
 
     public boolean verifyPayment(String paymentId) {
-        String url = UriComponentsBuilder.fromHttpUrl(mercadoPagoApiUrl + "/v1/payments/" + paymentId)
-                .queryParam("access_token", accessToken)
-                .toUriString();
+    String url = UriComponentsBuilder.fromHttpUrl(mercadoPagoApiUrl + "/v1/payments/" + paymentId)
+            .queryParam("access_token", accessToken)
+            .toUriString();
 
-        try {
-            PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
-            return "approved".equals(response.getStatus());
-        } catch (RestClientException e) {
-            return false;
-        }
+    try {
+        PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
+        return response != null && "approved".equals(response.getStatus());
+    } catch (RestClientException e) {
+        return false;
     }
+}
+
 }

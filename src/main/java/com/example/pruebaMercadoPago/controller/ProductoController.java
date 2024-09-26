@@ -82,37 +82,41 @@ public class ProductoController {
     @PostMapping("/api/mp/webhook")
     public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
         System.out.println(webhookData.toString());
-        
+
         String type = (String) webhookData.get("type");
         String action = (String) webhookData.get("action");
-        
-        if (webhookData.get("data") instanceof Map) {
-            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
-            String paymentId = (String) data.get("id");
-            
-            if (webhookData.get("metadata") instanceof Map) {
-                Map<String, Object> metadata = (Map<String, Object>) webhookData.get("metadata");
-                String pedidoId = (String) metadata.get("pedidoId"); // Recuperar el pedidoId de la metadata
-                System.out.println("Metadata - Pedido ID: " + pedidoId);
+
+        // Verificar si el topic es un merchant order y procesarlo
+        if ("merchant_order".equals(webhookData.get("topic"))) {
+            // Asegúrate de que el campo "resource" sea una cadena antes de usar split
+            Object resourceObj = webhookData.get("resource");
+            if (resourceObj instanceof String) {
+                String resource = (String) resourceObj;
+                String merchantOrderId = resource.split("/")[5]; // Suponiendo que el formato es el correcto
+                Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(merchantOrderId);
+                System.out.println("Detalles del Merchant Order: " + merchantOrderDetails);
+            } else {
+                System.out.println("El campo 'resource' no es una cadena");
             }
+        }
 
-            if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
+        // Verificar si el topic es payment y procesarlo
+        if ("payment".equals(type) && "payment.created".equals(action)) {
+            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
+            if (data != null) {
+                String paymentId = (String) data.get("id");
                 boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
-
                 if (paymentConfirmed) {
                     System.out.println("pago recibido");
                     return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
-                } else {
-                    System.out.println("pago no encontrado");
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pago no encontrado");
                 }
             }
-        } else {
-            System.out.println("El campo 'data' es nulo o no tiene el formato esperado");
         }
 
         return ResponseEntity.badRequest().body("Invalid webhook data");
     }
+
+
 
 }
 

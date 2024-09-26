@@ -81,25 +81,38 @@ public class ProductoController {
 
     @PostMapping("/api/mp/webhook")
     public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
-        System.out.print(webhookData.toString());
+        System.out.println(webhookData.toString());
+        
         String type = (String) webhookData.get("type");
         String action = (String) webhookData.get("action");
-        Map<String, String> data = (Map<String, String>) webhookData.get("data");
-        String paymentId = data.get("id");
-
-        if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
-            boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
-
-            if (paymentConfirmed) {
-                System.out.print("pago recibido");
-                return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
-            } else {
-                System.out.print("pago no encontrado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pago no ecnontrado");
+        
+        if (webhookData.get("data") instanceof Map) {
+            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
+            String paymentId = (String) data.get("id");
+            
+            if (webhookData.get("metadata") instanceof Map) {
+                Map<String, Object> metadata = (Map<String, Object>) webhookData.get("metadata");
+                String pedidoId = (String) metadata.get("pedidoId"); // Recuperar el pedidoId de la metadata
+                System.out.println("Metadata - Pedido ID: " + pedidoId);
             }
+
+            if ("payment".equals(type) && "payment.created".equals(action) && paymentId != null) {
+                boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
+
+                if (paymentConfirmed) {
+                    System.out.println("pago recibido");
+                    return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
+                } else {
+                    System.out.println("pago no encontrado");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pago no encontrado");
+                }
+            }
+        } else {
+            System.out.println("El campo 'data' es nulo o no tiene el formato esperado");
         }
 
         return ResponseEntity.badRequest().body("Invalid webhook data");
     }
+
 }
 

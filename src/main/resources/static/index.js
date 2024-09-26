@@ -6,8 +6,8 @@ const mp=new MercadoPago('APP_USR-401a2fc9-ea95-4753-9726-d89eb3e46032',{
     try{
     miArticulo={}
     miArticulo.titulo="coca"
-    miArticulo.cantidad=2
-    miArticulo.precio=10
+    miArticulo.cantidad=1
+    miArticulo.precio=1
     
     const response =await fetch("api/mp",{
     method:'POST',

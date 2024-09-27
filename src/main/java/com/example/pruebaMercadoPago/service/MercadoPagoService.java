@@ -32,6 +32,7 @@ public class MercadoPagoService {
 
         try {
             PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
+            System.out.print(response.toString());
             return "approved".equals(response.getStatus());
         } catch (RestClientException e) {
             return false;

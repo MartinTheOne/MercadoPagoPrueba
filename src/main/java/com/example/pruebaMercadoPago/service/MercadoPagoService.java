@@ -1,6 +1,7 @@
 package com.example.pruebaMercadoPago.service;
 
 import com.example.pruebaMercadoPago.entity.PaymentResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,9 +33,12 @@ public class MercadoPagoService {
 
         try {
             PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
-            System.out.print("Respuesta para ver si trae el PedidoID"+response.toString());
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+            System.out.println("Respuesta para ver si trae el PedidoID: " + jsonResponse); // Imprime el objeto como JSON
             return "approved".equals(response.getStatus());
-        } catch (RestClientException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

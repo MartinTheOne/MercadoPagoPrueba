@@ -32,7 +32,7 @@ public class MercadoPagoService {
 
         try {
             PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
-            System.out.print(response.toString());
+            System.out.print("Respuesta para ver si trae el PedidoID"+response.toString());
             return "approved".equals(response.getStatus());
         } catch (RestClientException e) {
             return false;

@@ -66,6 +66,8 @@ public class ProductoController {
                     .backUrls(backUrlsRequest)
                     .metadata(Map.of("pedidoId", "11111111111"))
                     .notificationUrl("https://mercadopagoprueba-production.up.railway.app/api/mp/webhook")
+                    .additionalInfo("1111111111 adicional inf")
+                    .externalReference("111111111 external ref")
                     .build();
 
             PreferenceClient client = new PreferenceClient();

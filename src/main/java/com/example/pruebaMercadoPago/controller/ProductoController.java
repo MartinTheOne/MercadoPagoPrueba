@@ -66,8 +66,7 @@ public class ProductoController {
                     .backUrls(backUrlsRequest)
                     .metadata(Map.of("pedidoId", "11111111111"))
                     .notificationUrl("https://mercadopagoprueba-production.up.railway.app/api/mp/webhook")
-                    .additionalInfo("1111111111 adicional inf")
-                    .externalReference("111111111 external ref")
+                    .additionalInfo("1111111111")
                     .build();
 
             PreferenceClient client = new PreferenceClient();
@@ -84,15 +83,16 @@ public class ProductoController {
     @PostMapping("/api/mp/webhook")
     public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
 
+        System.out.print(webhookData);
+
         String type = (String) webhookData.get("type");
         String action = (String) webhookData.get("action");
 
-        // Verificar si el topic es un merchant order y procesarlo
         if ("merchant_order".equals(webhookData.get("topic"))) {
             Object resourceObj = webhookData.get("resource");
             if (resourceObj instanceof String) {
                 String resourceUrl = (String) resourceObj;  // Usar la URL completa como 'resource'
-                Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(resourceUrl); // Pasar la URL completa
+                Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(resourceUrl);
             } else {
                 System.out.println("El campo 'resource' no es una cadena");
             }

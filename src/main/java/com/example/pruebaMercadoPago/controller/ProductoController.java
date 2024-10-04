@@ -95,7 +95,7 @@ public class ProductoController {
                 if (merchantOrderDetails.containsKey("additional_info")) {
                     String additionalInfo = (String) merchantOrderDetails.get("additional_info");
                     System.out.println("Additional Info: " + additionalInfo);
-                    return ResponseEntity.ok(HttpStatus.CREATED);
+                    return ResponseEntity.ok("creado");
                 } else {
                     System.out.println("El campo 'additional_info' no está presente en los detalles de la orden");
                 }

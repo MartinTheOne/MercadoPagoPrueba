@@ -81,8 +81,8 @@ public class ProductoController {
 
 
     @PostMapping("/api/mp/webhook")
-    public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
-        
+    public ResponseEntity<?> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
+
 
         String type = (String) webhookData.get("type");
         String action = (String) webhookData.get("action");
@@ -90,9 +90,15 @@ public class ProductoController {
         if ("merchant_order".equals(webhookData.get("topic"))) {
             Object resourceObj = webhookData.get("resource");
             if (resourceObj instanceof String) {
-                String resourceUrl = (String) resourceObj;  // Usar la URL completa como 'resource'
+                String resourceUrl = (String) resourceObj;
                 Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(resourceUrl);
-                System.out.print(merchantOrderDetails);
+                if (merchantOrderDetails.containsKey("additional_info")) {
+                    String additionalInfo = (String) merchantOrderDetails.get("additional_info");
+                    System.out.println("Additional Info: " + additionalInfo);
+                    return ResponseEntity.ok(HttpStatus.CREATED);
+                } else {
+                    System.out.println("El campo 'additional_info' no está presente en los detalles de la orden");
+                }
             } else {
                 System.out.println("El campo 'resource' no es una cadena");
             }

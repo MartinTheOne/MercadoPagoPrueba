@@ -82,8 +82,7 @@ public class ProductoController {
 
     @PostMapping("/api/mp/webhook")
     public ResponseEntity<String> handleWebhookNotification(@RequestBody Map<String, Object> webhookData) {
-
-        System.out.print(webhookData);
+        
 
         String type = (String) webhookData.get("type");
         String action = (String) webhookData.get("action");
@@ -93,6 +92,7 @@ public class ProductoController {
             if (resourceObj instanceof String) {
                 String resourceUrl = (String) resourceObj;  // Usar la URL completa como 'resource'
                 Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(resourceUrl);
+                System.out.print(merchantOrderDetails);
             } else {
                 System.out.println("El campo 'resource' no es una cadena");
             }

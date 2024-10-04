@@ -33,9 +33,6 @@ public class MercadoPagoService {
 
         try {
             PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
-            System.out.println("Respuesta para ver si trae el PedidoID: " + jsonResponse); // Imprime el objeto como JSON
             return "approved".equals(response.getStatus());
         } catch (Exception e) {
             e.printStackTrace();

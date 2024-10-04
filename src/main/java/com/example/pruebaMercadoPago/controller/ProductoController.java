@@ -12,7 +12,6 @@ import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,26 +93,19 @@ public class ProductoController {
                 Map<String, Object> merchantOrderDetails = mercadoPagoService.getMerchantOrderDetails(resourceUrl);
                 if (merchantOrderDetails.containsKey("additional_info")) {
                     String additionalInfo = (String) merchantOrderDetails.get("additional_info");
-                    System.out.println("Additional Info: " + additionalInfo);
-                    return ResponseEntity.ok("creado");
+                    try {
+                        long additionalInfoLong = Long.parseLong(additionalInfo);
+                        System.out.println("Additional Info (long): " + additionalInfoLong);
+                        return ResponseEntity.ok("creado");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error al convertir 'additional_info' a long: " + e.getMessage());
+                    }
+
                 } else {
                     System.out.println("El campo 'additional_info' no está presente en los detalles de la orden");
                 }
             } else {
                 System.out.println("El campo 'resource' no es una cadena");
-            }
-        }
-
-        // Verificar si el topic es payment y procesarlo
-        if ("payment".equals(type) && "payment.created".equals(action)) {
-            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
-            if (data != null) {
-                String paymentId = (String) data.get("id");
-                boolean paymentConfirmed = mercadoPagoService.verifyPayment(paymentId);
-                if (paymentConfirmed) {
-                    System.out.println("pago recibido");
-                    return ResponseEntity.status(HttpStatus.CREATED).body("Pago recibido");
-                }
             }
         }
 

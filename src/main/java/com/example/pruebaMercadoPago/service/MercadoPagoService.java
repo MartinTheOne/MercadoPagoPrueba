@@ -1,13 +1,10 @@
 package com.example.pruebaMercadoPago.service;
 
-import com.example.pruebaMercadoPago.entity.PaymentResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 
@@ -26,28 +23,14 @@ public class MercadoPagoService {
         this.restTemplate = restTemplate;
     }
 
-    public boolean verifyPayment(String paymentId) {
-        String url = UriComponentsBuilder.fromHttpUrl(mercadoPagoApiUrl + "/v1/payments/" + paymentId)
-                .queryParam("access_token", accessToken)
-                .toUriString();
-
-        try {
-            PaymentResponse response = restTemplate.getForObject(url, PaymentResponse.class);
-            return "approved".equals(response.getStatus());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     public Map<String, Object> getMerchantOrderDetails(String resourceUrl) {
-        // Usar la URL completa directamente
         String url = resourceUrl + "?access_token=" + accessToken;
 
         try {
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
-            return response.getBody(); // Devuelve el cuerpo de la respuesta
+            return response.getBody();
         } catch (RestClientException e) {
             System.out.println("Error obteniendo detalles del merchant order: " + e.getMessage());
             return null;
